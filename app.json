@@ -30,8 +30,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "5198549b-8960-4bf6-a553-e75e66bdb98f"
       }
-    }
+    },
+    "owner": "vishnuvaidyanathan"
   }
 }
