@@ -2,11 +2,11 @@ import React, { useState, useRef, useContext, useCallback, useEffect } from 'rea
 import {
   View, Text, TextInput, TouchableOpacity,
   FlatList, StyleSheet, KeyboardAvoidingView, Platform,
-  ActivityIndicator, StatusBar, Image,
+  StatusBar, Image, Animated, Easing,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LOTUS = require('../../assets/adaptive-icon.png');
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { C } from '../theme';
 import { ThreadsContext } from '../ThreadsContext';
 import { sendMessage, resetSession } from '../api';
@@ -76,17 +76,59 @@ const b = StyleSheet.create({
   timeLeft:  { color: C.textMuted, textAlign: 'left' },
 });
 
-// ── Typing dots ────────────────────────────────────────────────────────
-function Typing() {
+// ── Animated lotus typing indicator ────────────────────────────────────
+function LotusTyping() {
+  const scale   = useRef(new Animated.Value(0.65)).current;
+  const opacity = useRef(new Animated.Value(0.4)).current;
+  const glow    = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const bloom = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(scale,   { toValue: 1.05, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+          Animated.timing(glow,    { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(scale,   { toValue: 0.65, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.4,  duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+          Animated.timing(glow,    { toValue: 0,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+        ]),
+      ])
+    );
+    bloom.start();
+    return () => bloom.stop();
+  }, []);
+
   return (
-    <View style={[b.wrap, b.wrapLeft]}>
-      <View style={b.avatar}><Image source={LOTUS} style={b.lotusImg} /></View>
-      <View style={[b.bubble, b.botBubble, { paddingVertical: 13, paddingHorizontal: 20 }]}>
-        <ActivityIndicator size="small" color={C.accentLight} />
+    <View style={[b.wrap, b.wrapLeft, { marginBottom: 6 }]}>
+      {/* Small lotus avatar beside bubble */}
+      <View style={b.avatar}>
+        <Image source={LOTUS} style={b.lotusImg} />
+      </View>
+
+      {/* Animated lotus inside the bubble */}
+      <View style={[b.bubble, b.botBubble, t.bubble]}>
+        <Animated.Image
+          source={LOTUS}
+          style={[t.lotus, { transform: [{ scale }], opacity }]}
+        />
+        <Animated.View style={[t.ring, { opacity: glow }]} />
       </View>
     </View>
   );
 }
+
+const t = StyleSheet.create({
+  bubble: { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
+  lotus:  { width: 36, height: 36, resizeMode: 'contain' },
+  ring: {
+    position: 'absolute',
+    width: 52, height: 52, borderRadius: 26,
+    borderWidth: 1.5, borderColor: C.gold + '60',
+  },
+});
 
 // ── Screen ─────────────────────────────────────────────────────────────
 export default function ChatScreen({ route, navigation }) {
@@ -193,7 +235,7 @@ export default function ChatScreen({ route, navigation }) {
           ListHeaderComponent={<View style={{ height: 8 }} />}
         />
 
-        {loading && <Typing />}
+        {loading && <LotusTyping />}
 
         {/* ── Input ── */}
         <SafeAreaView edges={['bottom']} style={s.inputSafe}>
