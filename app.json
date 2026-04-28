@@ -23,7 +23,7 @@
       },
       "package": "com.vishnuvaidyanathan.mithra",
       "versionCode": 1,
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -49,31 +49,39 @@ export function useThreads() {
     loadThreads().then(setThreads);
   }, []);
 
-  const persist = (updated) => {
-    setThreads(updated);
-    saveThreads(updated);
+  // Always use functional setState so we read the latest state,
+  // not a stale closure — critical when two updates happen back-to-back
+  // (e.g. user message then Mithra reply in quick succession).
+  const update = (fn) => {
+    setThreads(prev => {
+      const next = fn(prev);
+      saveThreads(next);
+      return next;
+    });
   };
 
   const createThread = () => {
     const t = makeThread();
-    persist([t, ...threads]);
+    update(prev => [t, ...prev]);
     return t;
   };
 
   const deleteThread = (id) => {
-    persist(threads.filter(t => t.id !== id));
+    update(prev => prev.filter(t => t.id !== id));
   };
 
   const updateThread = (id, patch) => {
-    persist(threads.map(t => t.id === id ? { ...t, ...patch, updatedAt: Date.now() } : t));
+    update(prev =>
+      prev.map(t => t.id === id ? { ...t, ...patch, updatedAt: Date.now() } : t)
+    );
   };
 
   const appendMessage = (id, msg) => {
-    persist(
-      threads.map(t => {
+    update(prev =>
+      prev.map(t => {
         if (t.id !== id) return t;
-        const messages  = [...t.messages, msg];
-        const title     = t.messages.length === 0 && msg.role === 'user'
+        const messages = [...t.messages, msg];
+        const title    = t.messages.length === 0 && msg.role === 'user'
           ? msg.content.slice(0, 48)
           : t.title;
         return { ...t, messages, title, updatedAt: Date.now() };

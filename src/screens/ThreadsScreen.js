@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, StatusBar, SafeAreaView,
+  StyleSheet, StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { C } from '../theme';
 import { ThreadsContext } from '../ThreadsContext';
 

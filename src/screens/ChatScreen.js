@@ -1,9 +1,10 @@
 import React, { useState, useRef, useContext, useCallback, useEffect } from 'react';
 import {
-  SafeAreaView, View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity,
   FlatList, StyleSheet, KeyboardAvoidingView, Platform,
   ActivityIndicator, StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { C } from '../theme';
 import { ThreadsContext } from '../ThreadsContext';
 import { sendMessage, resetSession } from '../api';
