@@ -1,33 +1,38 @@
 export const C = {
-  // Backgrounds
-  bg:          '#07071a',
-  surface:     '#0f0f26',
-  card:        '#131330',
-  cardHigh:    '#1a1a3e',
+  // Core backgrounds
+  bg:         '#06061a',
+  surface:    '#0c0c24',
+  card:       '#10102e',
+  cardHover:  '#161638',
 
   // Borders
-  border:      '#1e1e45',
-  borderGlow:  '#3d3480',
+  border:     '#1c1c44',
+  borderSoft: '#252560',
+  glow:       'rgba(120,90,255,0.12)',
 
-  // Brand — violet/indigo
-  accent:      '#7c5cfc',
-  accentDim:   '#5b3dd4',
-  accentGlow:  'rgba(124,92,252,0.15)',
-  accentLight: '#b39dff',
-  gold:        '#c9a84c',   // lotus gold
+  // Brand violet
+  accent:     '#7c5aff',
+  accentMid:  '#6040e0',
+  accentGlow: 'rgba(124,90,255,0.20)',
+  accentSoft: 'rgba(124,90,255,0.10)',
+  accentLight:'#b09fff',
 
-  // Semantic
-  teal:        '#34d1bf',
-  rose:        '#f4607a',
-  amber:       '#f5a623',
+  // Gold (lotus)
+  gold:       '#c9a84c',
+  goldSoft:   'rgba(201,168,76,0.15)',
 
-  // Text — brighter for readability
-  textPrimary: '#f2eeff',
-  textSub:     '#b0a0f0',
-  textMuted:   '#7a70b0',
-  textFaint:   '#3a3560',
+  // Status
+  online:     '#3ecfb8',
+  warn:       '#f5a623',
+  danger:     '#f45c78',
 
-  // Chat bubbles
-  userBubble:  '#1c1848',
-  botBubble:   '#0d0d24',
+  // Text — high contrast
+  textPrimary:'#f0ecff',
+  textSub:    '#a99edf',
+  textMuted:  '#6e67a8',
+  textFaint:  '#38345a',
+
+  // Bubbles
+  userBubble: '#1a1650',
+  botBubble:  '#0d0d26',
 };
