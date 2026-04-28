@@ -36,5 +36,5 @@ export const font = {
   title:  { fontWeight: '700' },
   body:   { fontWeight: '400' },
   label:  { fontWeight: '600', letterSpacing: 0.4 },
-  mono:   { fontFamily: Platform?.OS === 'ios' ? 'Menlo' : 'monospace' },
+  mono:   { fontFamily: 'monospace' },
 };
