@@ -110,10 +110,9 @@ function LotusTyping() {
 
       {/* Animated lotus inside the bubble */}
       <View style={[b.bubble, b.botBubble, t.bubble]}>
-        <Animated.Image
-          source={LOTUS}
-          style={[t.lotus, { transform: [{ scale }], opacity }]}
-        />
+        <Animated.View style={[t.lotusWrap, { transform: [{ scale }], opacity }]}>
+          <Image source={LOTUS} style={t.lotus} />
+        </Animated.View>
         <Animated.View style={[t.ring, { opacity: glow }]} />
       </View>
     </View>
@@ -121,8 +120,9 @@ function LotusTyping() {
 }
 
 const t = StyleSheet.create({
-  bubble: { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
-  lotus:  { width: 36, height: 36, resizeMode: 'contain' },
+  bubble:    { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
+  lotusWrap: { width: 36, height: 36 },
+  lotus:     { width: 36, height: 36, resizeMode: 'contain' },
   ring: {
     position: 'absolute',
     width: 52, height: 52, borderRadius: 26,
