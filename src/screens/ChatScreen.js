@@ -5,6 +5,7 @@ import {
   StatusBar, Image, Animated, Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Clipboard from 'expo-clipboard';
 
 const LOTUS = require('../../assets/adaptive-icon.png');
 import { C } from '../theme';
@@ -20,23 +21,43 @@ function fmtTime(ts) {
 // ── Bubble ─────────────────────────────────────────────────────────────
 function Bubble({ msg, showTime }) {
   const isUser = msg.role === 'user';
+  const [copied, setCopied] = useState(false);
+
+  const handleLongPress = useCallback(async () => {
+    await Clipboard.setStringAsync(msg.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  }, [msg.content]);
+
   return (
     <View style={[b.wrap, isUser ? b.wrapRight : b.wrapLeft]}>
-      {/* Mithra avatar — only show on first or after gap */}
+      {/* Mithra avatar */}
       {!isUser && (
         <View style={b.avatar}>
           <Image source={LOTUS} style={b.lotusImg} />
         </View>
       )}
 
-      <View style={[b.bubble, isUser ? b.userBubble : b.botBubble]}>
-        <Text style={[b.txt, isUser ? b.userTxt : b.botTxt]}>{msg.content}</Text>
+      <TouchableOpacity
+        style={[b.bubble, isUser ? b.userBubble : b.botBubble]}
+        onLongPress={handleLongPress}
+        delayLongPress={450}
+        activeOpacity={0.75}
+      >
+        <Text selectable style={[b.txt, isUser ? b.userTxt : b.botTxt]}>
+          {msg.content}
+        </Text>
+        {copied && (
+          <Text style={[b.copied, isUser ? b.copiedRight : b.copiedLeft]}>
+            Copied ✓
+          </Text>
+        )}
         {showTime && msg.ts && (
           <Text style={[b.time, isUser ? b.timeRight : b.timeLeft]}>
             {fmtTime(msg.ts)}
           </Text>
         )}
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -74,6 +95,10 @@ const b = StyleSheet.create({
   time:      { fontSize: 10, marginTop: 5, opacity: 0.45 },
   timeRight: { color: C.textSub, textAlign: 'right' },
   timeLeft:  { color: C.textMuted, textAlign: 'left' },
+
+  copied:      { fontSize: 11, marginTop: 4, color: C.online, fontWeight: '600' },
+  copiedRight: { textAlign: 'right' },
+  copiedLeft:  { textAlign: 'left' },
 });
 
 // ── Animated lotus typing indicator ────────────────────────────────────
