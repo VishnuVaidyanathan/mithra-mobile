@@ -1,8 +1,8 @@
-import React, { useState, useRef, useContext, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useContext, useCallback, useEffect } from 'react'; // useRef kept for listRef
 import {
   View, Text, TextInput, TouchableOpacity,
   FlatList, StyleSheet, KeyboardAvoidingView, Platform,
-  StatusBar, Image, Animated, Easing,
+  StatusBar, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
@@ -109,54 +109,35 @@ const b = StyleSheet.create({
   msgImg: { width: 210, height: 210, borderRadius: 12, marginBottom: 6 },
 });
 
-// ── Animated lotus typing indicator ────────────────────────────────────
+// ── Lotus typing indicator (interval-based, no Animated API = no crash) ──
 function LotusTyping() {
-  const scale   = useRef(new Animated.Value(0.65)).current;
-  const opacity = useRef(new Animated.Value(0.4)).current;
-  const glow    = useRef(new Animated.Value(0)).current;
+  const [bright, setBright] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-    const bloom = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(scale,   { toValue: 1.05, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
-          Animated.timing(opacity, { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
-          Animated.timing(glow,    { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
-        ]),
-        Animated.parallel([
-          Animated.timing(scale,   { toValue: 0.65, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
-          Animated.timing(opacity, { toValue: 0.4,  duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
-          Animated.timing(glow,    { toValue: 0,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
-        ]),
-      ])
-    );
-    if (mounted) bloom.start();
-    return () => { mounted = false; bloom.stop(); };
+    let alive = true;
+    const id = setInterval(() => { if (alive) setBright(v => !v); }, 750);
+    return () => { alive = false; clearInterval(id); };
   }, []);
+
+  const opacity = bright ? 0.95 : 0.28;
+  const ringOpacity = bright ? 0.55 : 0;
 
   return (
     <View style={[b.wrap, b.wrapLeft, { marginBottom: 6 }]}>
-      {/* Small lotus avatar beside bubble */}
       <View style={b.avatar}>
         <Image source={LOTUS} style={b.lotusImg} />
       </View>
-
-      {/* Animated lotus inside the bubble */}
       <View style={[b.bubble, b.botBubble, t.bubble]}>
-        <Animated.View style={[t.lotusWrap, { transform: [{ scale }], opacity }]}>
-          <Image source={LOTUS} style={t.lotus} />
-        </Animated.View>
-        <Animated.View style={[t.ring, { opacity: glow }]} />
+        <Image source={LOTUS} style={[t.lotus, { opacity }]} />
+        <View style={[t.ring, { opacity: ringOpacity }]} />
       </View>
     </View>
   );
 }
 
 const t = StyleSheet.create({
-  bubble:    { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
-  lotusWrap: { width: 36, height: 36 },
-  lotus:     { width: 36, height: 36, resizeMode: 'contain' },
+  bubble: { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
+  lotus:  { width: 36, height: 36, resizeMode: 'contain' },
   ring: {
     position: 'absolute',
     width: 52, height: 52, borderRadius: 26,
