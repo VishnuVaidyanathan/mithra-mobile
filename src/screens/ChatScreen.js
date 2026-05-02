@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
+import * as ImagePicker from 'expo-image-picker';
 
 const LOTUS = require('../../assets/adaptive-icon.png');
 import { C } from '../theme';
@@ -44,9 +45,14 @@ function Bubble({ msg, showTime }) {
         delayLongPress={450}
         activeOpacity={0.75}
       >
+        {msg.imageUri && (
+          <Image source={{ uri: msg.imageUri }} style={b.msgImg} resizeMode="cover" />
+        )}
+        {!!msg.content && (
         <Text selectable style={[b.txt, isUser ? b.userTxt : b.botTxt]}>
           {msg.content}
         </Text>
+        )}
         {copied && (
           <Text style={[b.copied, isUser ? b.copiedRight : b.copiedLeft]}>
             Copied ✓
@@ -99,6 +105,8 @@ const b = StyleSheet.create({
   copied:      { fontSize: 11, marginTop: 4, color: C.online, fontWeight: '600' },
   copiedRight: { textAlign: 'right' },
   copiedLeft:  { textAlign: 'left' },
+
+  msgImg: { width: 210, height: 210, borderRadius: 12, marginBottom: 6 },
 });
 
 // ── Animated lotus typing indicator ────────────────────────────────────
@@ -162,9 +170,10 @@ export default function ChatScreen({ route, navigation }) {
   const { threads, appendMessage, updateThread, apiKey } = useContext(ThreadsContext);
   const thread = threads.find(t => t.id === threadId);
 
-  const [input, setInput]     = useState('');
-  const [loading, setLoading] = useState(false);
-  const listRef               = useRef(null);
+  const [input, setInput]           = useState('');
+  const [loading, setLoading]       = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null); // { uri, base64, mimeType }
+  const listRef                     = useRef(null);
 
   const scrollEnd = () =>
     setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 80);
@@ -178,17 +187,35 @@ export default function ChatScreen({ route, navigation }) {
     }
   }, []);
 
+  const pickImage = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 0.6,
+      base64: true,
+    });
+    if (!result.canceled && result.assets?.[0]) {
+      const a = result.assets[0];
+      setSelectedImage({ uri: a.uri, base64: a.base64, mimeType: a.mimeType || 'image/jpeg' });
+    }
+  }, []);
+
   const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text || loading || !thread) return;
+    if ((!text && !selectedImage) || loading || !thread) return;
 
-    appendMessage(threadId, { id: `u_${Date.now()}`, role: 'user', ts: Date.now(), content: text });
+    const imageUri      = selectedImage?.uri    || null;
+    const imageBase64   = selectedImage?.base64  || null;
+    const imageMimeType = selectedImage?.mimeType || 'image/jpeg';
+
+    appendMessage(threadId, { id: `u_${Date.now()}`, role: 'user', ts: Date.now(), content: text, imageUri });
     setInput('');
+    setSelectedImage(null);
     setLoading(true);
     scrollEnd();
 
     try {
-      const data = await sendMessage({ text, sessionId: thread.sessionId, apiKey: apiKey || '' });
+      const data = await sendMessage({ text, sessionId: thread.sessionId, apiKey: apiKey || '', imageBase64, imageMimeType });
       appendMessage(threadId, { id: `m_${Date.now()}`, role: 'mithra', ts: Date.now(), content: data.reply });
     } catch (e) {
       appendMessage(threadId, { id: `e_${Date.now()}`, role: 'mithra', ts: Date.now(), content: `Something went wrong. ${e.message}` });
@@ -265,7 +292,22 @@ export default function ChatScreen({ route, navigation }) {
 
         {/* ── Input ── */}
         <SafeAreaView edges={['bottom']} style={s.inputSafe}>
+          {/* Image preview strip */}
+          {selectedImage && (
+            <View style={s.previewStrip}>
+              <Image source={{ uri: selectedImage.uri }} style={s.previewImg} resizeMode="cover" />
+              <TouchableOpacity style={s.previewRemove} onPress={() => setSelectedImage(null)}>
+                <Text style={s.previewRemoveTxt}>×</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <View style={s.inputRow}>
+            {/* Photo picker button */}
+            <TouchableOpacity style={s.photoBtn} onPress={pickImage} disabled={loading}>
+              <Text style={s.photoBtnTxt}>🖼</Text>
+            </TouchableOpacity>
+
             <TextInput
               style={s.input}
               value={input}
@@ -279,9 +321,9 @@ export default function ChatScreen({ route, navigation }) {
               onSubmitEditing={handleSend}
             />
             <TouchableOpacity
-              style={[s.sendBtn, (!input.trim() || loading) && s.sendOff]}
+              style={[s.sendBtn, (!input.trim() && !selectedImage || loading) && s.sendOff]}
               onPress={handleSend}
-              disabled={!input.trim() || loading}
+              disabled={(!input.trim() && !selectedImage) || loading}
             >
               <Text style={s.sendTxt}>↑</Text>
             </TouchableOpacity>
@@ -354,4 +396,31 @@ const s = StyleSheet.create({
   },
   sendOff:  { opacity: 0.25, elevation: 0, shadowOpacity: 0 },
   sendTxt:  { color: '#fff', fontSize: 20, fontWeight: '700', marginTop: -2 },
+
+  // Photo button
+  photoBtn: {
+    width: 42, height: 42, borderRadius: 12,
+    backgroundColor: C.card,
+    borderWidth: 1, borderColor: C.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  photoBtnTxt: { fontSize: 20 },
+
+  // Image preview strip (above input row)
+  previewStrip: {
+    flexDirection: 'row', alignItems: 'flex-start',
+    paddingHorizontal: 16, paddingTop: 10,
+    borderTopWidth: 1, borderTopColor: C.border,
+  },
+  previewImg: {
+    width: 80, height: 80, borderRadius: 10,
+    borderWidth: 1, borderColor: C.borderSoft,
+  },
+  previewRemove: {
+    position: 'absolute', top: 4, left: 74,
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: C.danger,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  previewRemoveTxt: { color: '#fff', fontSize: 14, fontWeight: '700', lineHeight: 20 },
 });

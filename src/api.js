@@ -1,13 +1,15 @@
 const BASE_URL = 'https://mithra-app-production.up.railway.app';
 
-export async function sendMessage({ text, sessionId, apiKey }) {
+export async function sendMessage({ text, sessionId, apiKey, imageBase64 = null, imageMimeType = 'image/jpeg' }) {
   const res = await fetch(`${BASE_URL}/process`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      text,
-      session_id: sessionId,
-      api_key: apiKey || '',
+      text:             text || '',
+      session_id:       sessionId,
+      api_key:          apiKey || '',
+      image_base64:     imageBase64,
+      image_mime_type:  imageMimeType,
     }),
   });
   if (!res.ok) {
