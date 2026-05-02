@@ -83,22 +83,23 @@ function LotusTyping() {
   const glow    = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let mounted = true;
     const bloom = Animated.loop(
       Animated.sequence([
         Animated.parallel([
-          Animated.timing(scale,   { toValue: 1.05, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
-          Animated.timing(glow,    { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+          Animated.timing(scale,   { toValue: 1.05, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
+          Animated.timing(opacity, { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
+          Animated.timing(glow,    { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
         ]),
         Animated.parallel([
-          Animated.timing(scale,   { toValue: 0.65, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.4,  duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
-          Animated.timing(glow,    { toValue: 0,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: true }),
+          Animated.timing(scale,   { toValue: 0.65, duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
+          Animated.timing(opacity, { toValue: 0.4,  duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
+          Animated.timing(glow,    { toValue: 0,    duration: 900, easing: Easing.inOut(Easing.sine), useNativeDriver: false }),
         ]),
       ])
     );
-    bloom.start();
-    return () => bloom.stop();
+    if (mounted) bloom.start();
+    return () => { mounted = false; bloom.stop(); };
   }, []);
 
   return (
