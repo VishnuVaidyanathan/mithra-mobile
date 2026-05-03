@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const LOTUS = require('../../assets/adaptive-icon.png');
 import { C } from '../theme';
@@ -172,12 +173,22 @@ export default function ChatScreen({ route, navigation }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
-      quality: 0.6,
-      base64: true,
+      quality: 1,       // pick full quality, we compress ourselves below
+      base64: false,    // don't base64 yet — do it after resize
     });
     if (!result.canceled && result.assets?.[0]) {
       const a = result.assets[0];
-      setSelectedImage({ uri: a.uri, base64: a.base64, mimeType: a.mimeType || 'image/jpeg' });
+      // Resize to max 800px and compress — keeps base64 under ~150KB
+      const compressed = await ImageManipulator.manipulateAsync(
+        a.uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+      );
+      setSelectedImage({
+        uri: a.uri,                  // show original preview
+        base64: compressed.base64,   // send compressed base64
+        mimeType: 'image/jpeg',
+      });
     }
   }, []);
 
