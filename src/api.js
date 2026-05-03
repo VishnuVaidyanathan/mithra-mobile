@@ -1,4 +1,4 @@
-const BASE_URL = 'https://mithra-app-production.up.railway.app';
+const BASE_URL = 'https://api.edgi.in';
 const TIMEOUT_MS = 30_000; // 30 seconds
 
 function fetchWithTimeout(url, options) {
