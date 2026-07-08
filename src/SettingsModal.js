@@ -16,17 +16,17 @@ export default function SettingsModal({ visible, apiKey, onSave, onClose }) {
       >
         <View style={s.card}>
           <Text style={s.title}>⚙  Settings</Text>
-          <Text style={s.label}>Google AI Studio API Key</Text>
+          <Text style={s.label}>Anthropic API Key</Text>
           <Text style={s.hint}>
-            Get a free key at{' '}
-            <Text style={{ color: C.accentLight }}>aistudio.google.com</Text>
+            Get a key at{' '}
+            <Text style={{ color: C.accentLight }}>console.anthropic.com</Text>
           </Text>
 
           <TextInput
             style={s.input}
             value={key}
             onChangeText={setKey}
-            placeholder="AIza..."
+            placeholder="sk-ant-..."
             placeholderTextColor={C.textFaint}
             secureTextEntry
             autoCapitalize="none"
